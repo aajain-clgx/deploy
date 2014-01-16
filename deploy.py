@@ -24,7 +24,7 @@ def deploy(src_dir, dest_dir, app_name):
 
   path_to_app = os.path.join(dest_dir, app_name)
   if os.path.exists(path_to_app):
-    sys.stdout.write('Deleting application ' + app_name + ' in ' + src_dir + ' ... ')
+    sys.stdout.write('Deleting application ' + app_name + ' in ' + dest_dir + ' ... ')
     rmtree(path_to_app)
     print('done')
   else:
