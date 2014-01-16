@@ -1,4 +1,4 @@
 deploy
 ======
 
-Deployment scripts for services
+Deployment scripts for services.
