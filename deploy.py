@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #
 # $Id: build-websites.py 13345 2013-12-12 22:13:16Z aajain $
 #
