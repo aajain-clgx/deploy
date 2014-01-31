@@ -182,7 +182,7 @@ def copy_spatial(options):
 
     # Copy client script
     mkdir(options, os.path.join(root_dst_dir, "gisportal.com", "client"))
-    copy_file(options, os.path.join(src_dir, "client.js"), os.path.join(root_dst_dir, "gisportal.com", "client"))
+    copy_file(options, os.path.join(src_dir, "client", "client.js"), os.path.join(root_dst_dir, "gisportal.com", "client"))
 
     # Create a configuration file
     create_config(options, dst_dir)
