@@ -57,8 +57,8 @@ def get_configuration(options):
 
     if(machine_name == "ALMOND"):
         logger["emailReceipient"] = 'aajain@corelogic.com'
-        usagedb["host"] = "grape.proxix.flooddata.com"
-        webusagedb["host"] = "grape.proxix.flooddata.com"
+        usagedb["host"] = "localhost"
+        webusagedb["host"] = "localhost"
     elif(machine_name == "BLD01WW72410TP6"):
         logger["emailReceipient"] = 'avinueza@corelogic.com'
         usagedb["host"] = "localhost"
