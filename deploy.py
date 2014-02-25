@@ -27,13 +27,13 @@ def get_configuration(options):
     config = {}
 
     # Defaults values
-    logger = {
-                'fileLevel' : 'NOTICE',
-                'emailLevel' : 'ERROR',
-                'smtpServer' : 'smtp.corelogic.com',
-                'emailSender' : 'logger@corelogic.com',
-                'logFilePath' : os.path.join(options.websites_dir, "log", "spatial.txt")
-             }
+    logsettings = {
+                   'fileLevel' : 'VERBOSE',
+                   'emailLevel' : 'ERROR',
+                   'smtpServer' : 'smtp.corelogic.com',
+                   'emailSender' : 'logger@corelogic.com',
+                   'logFilePath' : os.path.join(options.websites_dir, "log", "spatial.txt")
+                 }
     usagedb = {
                 'host': 'localhost',
                 'user': 'web_user',
@@ -54,22 +54,19 @@ def get_configuration(options):
     config["machineName"] = machine_name
     config["appName"] = "spatial"
     config["serverPort"] = 8888
-
+    config["usageInsertTimeMS"] = 3000  # Insert usagdb record every n millisecond
+    config["permissionsCacheTimeMS"] = 10000  #10min to update cache from users
     if(machine_name == "ALMOND"):
-        logger["emailReceipient"] = 'aajain@corelogic.com'
-        usagedb["host"] = "localhost"
-        webusagedb["host"] = "localhost"
+        logsettings["emailReceipient"] = 'aajain@corelogic.com'
     elif(machine_name == "BLD01WW72410TP6"):
-        logger["emailReceipient"] = 'avinueza@corelogic.com'
-        usagedb["host"] = "localhost"
-        webusagedb["host"] = "localhost"
+        logsettings["emailReceipient"] = 'avinueza@corelogic.com'
     else:
         print "ERROR: Configuration for " + computer_name + " not found in"
         print "       " + __file__ + ":get_configuration()"
         print "       Edit %s and add the config for this machine." % __file__
         sys.exit(1)
 
-    config["logger"] = logger
+    config["logsettings"] = logsettings
     config["usagedb"] = usagedb
     config["webusagedb"] = webusagedb
 
@@ -106,10 +103,13 @@ def create_config(options, dst_dir):
         file.write("//config.js\n")
         file.write("//Configuration file for node.js spatial server\n\n")
         file.write('"use strict";\n\n')
+        file.write("var Logger = require('./spatial/lib/common/logger.js');\n\n")
         file.write("var config = \n")
         file.write(json.dumps(config, sort_keys=True,
                     indent=4, separators=(',', ': ')))
         file.write(';\n')
+        file.write('var logger = new Logger(config);\n');
+        file.write("config.logger = logger;\n\n");
         file.write('module.exports = config;')
     except Exception as e:
         print "ERROR: Writing conig.js file : %s" % e.message
