@@ -54,6 +54,7 @@ def get_configuration(options):
     config["machineName"] = machine_name
     config["appName"] = "spatial"
     config["serverPort"] = 8888
+    config["salt"] = "0123456789abcdef"
     config["usageInsertTimeMS"] = 3000  # Insert usagdb record every n millisecond
     config["permissionsCacheTimeMS"] = 10000  #10min to update cache from users
     if(machine_name == "ALMOND"):
