@@ -10,8 +10,8 @@
 Creates a F:\deployjs hierarchy.
 """
 
-import datetime,distutils.archive_util,glob,optparse,os,re,shutil,stat, \
-       subprocess,sys, zipfile, os.path, json, socket, fnmatch
+import glob, optparse, os, shutil, \
+       subprocess,sys, zipfile, os.path, json, socket, fnmatch, ConfigParser
 
 
 def get_config_dir():
@@ -30,7 +30,7 @@ def get_configuration(options):
     logsettings = {
                    'fileLevel' : 'VERBOSE',
                    'emailLevel' : 'ERROR',
-                   'smtpServer' : 'smtp.corelogic.com',
+                   'smtpServer' : '10.134.48.17',
                    'emailSender' : 'logger@corelogic.com',
                    'logFilePath' : os.path.join(options.websites_dir, "log", "spatial.txt")
                  }
@@ -57,8 +57,11 @@ def get_configuration(options):
     config["salt"] = "0123456789abcdef"
     config["usageInsertTimeMS"] = 3000  # Insert usagdb record every n millisecond
     config["permissionsCacheTimeMS"] = 10000  #10min to update cache from users
+    config["socketserver"] = "ws://localhost:7000/ws"
     if(machine_name == "ALMOND"):
         logsettings["emailReceipient"] = 'aajain@corelogic.com'
+        webusagedb['host'] = '127.0.0.1'
+        usagedb['host'] = '127.0.0.1'
     elif(machine_name == "BLD01WW72410TP6"):
         logsettings["emailReceipient"] = 'avinueza@corelogic.com'
     else:
@@ -119,6 +122,20 @@ def create_config(options, dst_dir):
         if file != None:
           file.close()
 
+def create_socketserver_config(options):
+  cfgfile = None
+  filepath = os.path.join(options.websites_dir, "gisportal.com", "socketserver", "socketserver.config");
+  try:
+    cfgfile = open(filepath, "w") 
+    parser = ConfigParser.ConfigParser()
+    parser.add_section("Connection")
+    parser.set("Connection", "Port", 9000)
+    parser.write(cfgfile)
+  except Exception as e:
+    print "ERROR: Writing socketserver.config file: %s" % e.message
+  finally:
+      if cfgfile != None:
+        cfgfile.close()
 
 
 
@@ -185,6 +202,13 @@ def copy_spatial(options):
     # Copy client script
     mkdir(options, os.path.join(root_dst_dir, "gisportal.com", "client"))
     copy_file(options, os.path.join(src_dir, "client", "client.js"), os.path.join(root_dst_dir, "gisportal.com", "client"))
+  
+    # Copy SocketServer 
+    mkdir(options, os.path.join(root_dst_dir, "gisportal.com", "socketserver"))
+    copy_file(options, os.path.join(src_dir,"socketserver", "gissocket.py"), os.path.join(root_dst_dir, "gisportal.com", "socketserver"))
+    
+    # Create SocketServer config file 
+    create_socketserver_config(options)
 
     # Create a configuration file
     create_config(options, dst_dir)
@@ -192,8 +216,6 @@ def copy_spatial(options):
     # Create log  directory
     mkdir(options, os.path.join(root_dst_dir, "log"))
 
-    # Setup for forever
-    # Make .forever file
 
 
 def main():
