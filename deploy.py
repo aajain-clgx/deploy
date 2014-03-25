@@ -19,6 +19,8 @@ def get_config_dir():
   machine_name = socket.gethostname().upper()
   if(machine_name == "ALMOND"):
     return ("/home/aajain/deploy")
+  elif (machine_name == "MAGNOLIA"):
+    return "/home/adam/deploy"
   else:
     return None
 
@@ -62,8 +64,10 @@ def get_configuration(options):
         logsettings["emailReceipient"] = 'aajain@corelogic.com'
         webusagedb['host'] = '127.0.0.1'
         usagedb['host'] = '127.0.0.1'
-    elif(machine_name == "BLD01WW72410TP6"):
+    elif(machine_name == "MAGNOLIA"):
         logsettings["emailReceipient"] = 'avinueza@corelogic.com'
+        webusagedb['host'] = '10.3.212.82'
+        usagedb['host'] = '10.3.212.82'
     else:
         print "ERROR: Configuration for " + computer_name + " not found in"
         print "       " + __file__ + ":get_configuration()"
@@ -191,6 +195,7 @@ def copy_spatial(options):
     root_dst_dir = options.websites_dir
     dst_dir = os.path.join(options.websites_dir, "gisportal.com", "spatial");
     src_dir = options.src_dir
+    print(src_dir)
 
     # Copy lib & test to destination spatial folder
     copy_hier(options, os.path.join(src_dir, "lib"), os.path.join(dst_dir, "lib"))
