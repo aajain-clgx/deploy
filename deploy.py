@@ -10,19 +10,20 @@
 Creates a F:\deployjs hierarchy.
 """
 
-import glob, optparse, os, shutil, \
-       subprocess,sys, zipfile, os.path, json, socket, fnmatch, ConfigParser
+import glob, optparse, os, shutil, subprocess, sys, zipfile,\
+       os.path, json, socket, fnmatch, ConfigParser
 
 
 def get_config_dir():
-  """Gets default src and dst directory for a machine"""
-  machine_name = socket.gethostname().upper()
-  if(machine_name == "ALMOND"):
-    return ("/home/aajain/deploy")
-  elif (machine_name == "MAGNOLIA"):
-    return "/home/adam/deploy"
-  else:
-    return None
+    """Gets default src and dst directory for a machine"""
+    machine_name = socket.gethostname().upper()
+    if(machine_name == "ALMOND"):
+        return ("/home/aajain/deploy")
+    elif (machine_name == "MAGNOLIA"):
+        return "/home/adam/deploy"
+    else:
+        return None
+
 
 def get_configuration(options):
     """Gets configuration for a machine"""
@@ -30,26 +31,25 @@ def get_configuration(options):
 
     # Defaults values
     logsettings = {
-                   'fileLevel' : 'VERBOSE',
-                   'emailLevel' : 'ERROR',
-                   'smtpServer' : '10.134.48.17',
-                   'emailSender' : 'logger@corelogic.com',
-                   'logFilePath' : os.path.join(options.websites_dir, "log", "spatial.txt")
-                 }
+        'fileLevel': 'VERBOSE',
+        'emailLevel': 'ERROR',
+        'smtpServer': '10.134.48.17',
+        'emailSender': 'logger@corelogic.com',
+        'logFilePath': os.path.join(options.websites_dir, "log", "spatial.txt")
+        }
     usagedb = {
-                'host': 'localhost',
-                'user': 'web_user',
-                'password': 'w3bus3r',
-                'database': 'usagelog'
-              }
+        'host': 'localhost',
+        'user': 'web_user',
+        'password': 'w3bus3r',
+        'database': 'usagelog'
+        }
 
     webusagedb = {
-                'host': 'localhost',
-                'user': 'web_user',
-                'password': 'w3bus3r',
-                'database': 'webusage'
-              }
-
+        'host': 'localhost',
+        'user': 'web_user',
+        'password': 'w3bus3r',
+        'database': 'webusage'
+        }
 
     machine_name = socket.gethostname().upper()
 
@@ -58,7 +58,7 @@ def get_configuration(options):
     config["serverPort"] = 8888
     config["salt"] = "0123456789abcdef"
     config["usageInsertTimeMS"] = 3000  # Insert usagdb record every n millisecond
-    config["permissionsCacheTimeMS"] = 10000  #10min to update cache from users
+    config["permissionsCacheTimeMS"] = 10000  # 10min to update cache from user
     config["socketserver"] = "ws://localhost:7000/ws"
     if(machine_name == "ALMOND"):
         logsettings["emailReceipient"] = 'aajain@corelogic.com'
@@ -69,8 +69,8 @@ def get_configuration(options):
         webusagedb['host'] = '10.3.212.82'
         usagedb['host'] = '10.3.212.82'
     else:
-        print "ERROR: Configuration for " + computer_name + " not found in"
-        print "       " + __file__ + ":get_configuration()"
+        print "ERROR: Configuration for %s not found in" % machine_name
+        print "       %s:get_configuration()" % __file__
         print "       Edit %s and add the config for this machine." % __file__
         sys.exit(1)
 
@@ -80,33 +80,33 @@ def get_configuration(options):
 
     return config
 
+
 def minify(options):
-  """Minifies all javascript source code. To be used in release mode"""
+    """Minifies all javascript source code. To be used in release mode"""
 
-  dst_dir = os.path.join(options.websites_dir, "gisportal.com")
-  if options.verbose:
-    print "BUILD: jsmin(%s)" % (dst_dir)
+    dst_dir = os.path.join(options.websites_dir, "gisportal.com")
+    if options.verbose:
+        print "BUILD: jsmin(%s)" % (dst_dir)
 
-  for root, dirnames, filenames in os.walk(dst_dir):
-    for filename in fnmatch.filter(filenames, '*.js'):
-      try:
-          full_file_path = os.path.join(root, filename)
-          subprocess.check_call('jsmin < "%s" > "%s.min"' % (full_file_path, full_file_path), shell=True)
-          subprocess.check_call('rm -rf "%s"' % (full_file_path), shell=True)
-          subprocess.check_call('mv "%s.min" "%s"' % (full_file_path, full_file_path), shell=True)
+    for root, dirnames, filenames in os.walk(dst_dir):
+        for filename in fnmatch.filter(filenames, '*.js'):
+            try:
+                full_file_path = os.path.join(root, filename)
+                subprocess.check_call('jsmin < "%s" > "%s.min"' % (full_file_path, full_file_path), shell=True)
+                subprocess.check_call('rm -rf "%s"' % (full_file_path), shell=True)
+                subprocess.check_call('mv "%s.min" "%s"' % (full_file_path, full_file_path), shell=True)
 
-      except subprocess.CalledProcessError as e:
-        print "ERROR: Error while minifying deployment directory - %s :" % e.message
-        sys.exit(1)
-      
-      
+            except subprocess.CalledProcessError as e:
+                print "ERROR: Error while minifying deployment directory - %s :" % e.message
+                sys.exit(1)
+
 
 def create_config(options, dst_dir):
     """Create Config.js file to deploy dst dir"""
     file = None
     try:
         config = get_configuration(options)
-        file  = open(os.path.join(options.websites_dir, "gisportal.com", "config.js"),"w")
+        file = open(os.path.join(options.websites_dir, "gisportal.com", "config.js"), "w")
         file.write("//Auto-generated by deploy.py\n\n")
         file.write("//config.js\n")
         file.write("//Configuration file for node.js spatial server\n\n")
@@ -116,31 +116,32 @@ def create_config(options, dst_dir):
         file.write(json.dumps(config, sort_keys=True,
                     indent=4, separators=(',', ': ')))
         file.write(';\n')
-        file.write('var logger = new Logger(config);\n');
-        file.write("config.logger = logger;\n\n");
+        file.write('var logger = new Logger(config);\n')
+        file.write("config.logger = logger;\n\n")
         file.write('module.exports = config;')
     except Exception as e:
         print "ERROR: Writing conig.js file : %s" % e.message
         sys.exit(1)
     finally:
-        if file != None:
-          file.close()
+        if file is not None:
+            file.close()
+
 
 def create_socketserver_config(options):
-  cfgfile = None
-  filepath = os.path.join(options.websites_dir, "gisportal.com", "socketserver", "socketserver.config");
-  try:
-    cfgfile = open(filepath, "w") 
-    parser = ConfigParser.ConfigParser()
-    parser.add_section("Connection")
-    parser.set("Connection", "Port", 9000)
-    parser.write(cfgfile)
-  except Exception as e:
-    print "ERROR: Writing socketserver.config file: %s" % e.message
-  finally:
-      if cfgfile != None:
-        cfgfile.close()
+    cfgfile = None
+    filepath = os.path.join(options.websites_dir, "gisportal.com", "socketserver", "socketserver.config")
 
+    try:
+        cfgfile = open(filepath, "w")
+        parser = ConfigParser.ConfigParser()
+        parser.add_section("Connection")
+        parser.set("Connection", "Port", 9000)
+        parser.write(cfgfile)
+    except Exception as e:
+        print "ERROR: Writing socketserver.config file: %s" % e.message
+    finally:
+        if cfgfile is not None:
+            cfgfile.close()
 
 
 def mkdir(options, dirname):
@@ -179,6 +180,7 @@ def copy_hier(options, src, dst):
         print "BUILD: copy_hier(%s, %s)" % (src, dst)
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("*.md"))
 
+
 def unzip(options, zip_pathname, dst_dir):
     """Unzip zip zip_pathname to dst_dir."""
     if options.verbose:
@@ -193,9 +195,8 @@ def unzip(options, zip_pathname, dst_dir):
 def copy_spatial(options):
     """Copy spatial director"""
     root_dst_dir = options.websites_dir
-    dst_dir = os.path.join(options.websites_dir, "gisportal.com", "spatial");
+    dst_dir = os.path.join(options.websites_dir, "gisportal.com", "spatial")
     src_dir = options.src_dir
-    print(src_dir)
 
     # Copy lib & test to destination spatial folder
     copy_hier(options, os.path.join(src_dir, "lib"), os.path.join(dst_dir, "lib"))
@@ -207,12 +208,12 @@ def copy_spatial(options):
     # Copy client script
     mkdir(options, os.path.join(root_dst_dir, "gisportal.com", "client"))
     copy_file(options, os.path.join(src_dir, "client", "client.js"), os.path.join(root_dst_dir, "gisportal.com", "client"))
-  
-    # Copy SocketServer 
+
+    # Copy SocketServer
     mkdir(options, os.path.join(root_dst_dir, "gisportal.com", "socketserver"))
     copy_file(options, os.path.join(src_dir,"socketserver", "gissocket.py"), os.path.join(root_dst_dir, "gisportal.com", "socketserver"))
-    
-    # Create SocketServer config file 
+
+    # Create SocketServer config file
     create_socketserver_config(options)
 
     # Create a configuration file
@@ -222,17 +223,16 @@ def copy_spatial(options):
     mkdir(options, os.path.join(root_dst_dir, "log"))
 
 
-
 def main():
 
     default_src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../spatial")
     default_dst_dir = get_config_dir()
 
     option_parser = optparse.OptionParser(
-        usage="usage: %prog [options]\n" +\
-            "  Build node.js websites distribution and zipfile.\n" +\
-            "  Specify --help to show available options.",
-        version="%prog " +"1",
+        usage="""usage: %prog [options]
+                    Build node.js websites distribution and zipfile.
+                    Specify --help to show available options.""",
+        version="%prog " + "1",
     )
     option_parser.add_option(
         "--verbose",
@@ -275,11 +275,11 @@ def main():
     )
 
     (options, args) = option_parser.parse_args()
-    
-    if(options.websites_dir == None):
-      print "ERROR: Either change get_config_dir() function to add your machine default_dst_dir \
+
+    if(options.websites_dir is None):
+        print "ERROR: Either change get_config_dir() function to add your machine default_dst_dir \
               or specify destination folder with --websites-dir"
-      return 1;
+        return 1
 
     options.websites_dir = options.websites_dir.rstrip(r"\/")
     if len(args) != 0:
@@ -306,7 +306,7 @@ def main():
 
     # Minify js files in release mode
     if(options.release):
-      minify(options)
+        minify(options)
 
 
 if __name__ == '__main__':
